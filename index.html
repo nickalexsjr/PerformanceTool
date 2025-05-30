@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Performance Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.2);
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 50px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .investment-result {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .investment-result:hover {
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .performance-pill {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 3px;
+        }
+
+        .performance-positive {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .performance-negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .portfolio-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .portfolio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .portfolio-header h4 {
+            margin: 0;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .portfolio-current .portfolio-header {
+            border-bottom-color: #3498db;
+        }
+
+        .portfolio-proposed .portfolio-header {
+            border-bottom-color: #27ae60;
+        }
+
+        .btn-clear {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-clear:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .btn-add-current {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 5px;
+        }
+
+        .btn-add-proposed {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-current:hover, .btn-add-proposed:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .portfolio-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .portfolio-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .portfolio-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .portfolio-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .btn-remove {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-remove:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .summary-item h5 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .summary-item div {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .summary-item strong {
+            font-size: 20px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+
+        .loading i {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <h1><i class="bi bi-graph-up"></i> Investment Performance Tool</h1>
+        
+        <!-- Search Section -->
+        <div class="glass-card">
+            <h4 class="mb-4"><i class="bi bi-search"></i> Search Investments</h4>
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="search-box">
+                        <input type="text" id="nameSearch" placeholder="🔍 Search by investment name...">
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="search-box">
+                        <input type="text" id="apirSearch" placeholder="🔍 Search by APIR code...">
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-center">
+                    <button class="search-btn w-100" onclick="performSearch()">
+                        Search
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Search Results -->
+            <div class="mt-4" id="searchResultsSection" style="display: none;">
+                <h5 class="mb-3">Search Results</h5>
+                <div id="searchResults"></div>
+            </div>
+        </div>
+
+        <!-- Performance Summary -->
+        <div class="summary-box" id="summarySection" style="display: none;">
+            <h4><i class="bi bi-bar-chart-line"></i> Performance Summary</h4>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h5><i class="bi bi-folder2"></i> Current Portfolio</h5>
+                    <div id="currentSummary">No investments selected</div>
+                </div>
+                <div class="summary-item">
+                    <h5><i class="bi bi-folder2-open"></i> Proposed Portfolio</h5>
+                    <div id="proposedSummary">No investments selected</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Sections -->
+        <div class="row">
+            <!-- Current Portfolio -->
+            <div class="col-lg-6 mb-4">
+                <div class="portfolio-section portfolio-current">
+                    <div class="portfolio-header">
+                        <h4><i class="bi bi-briefcase"></i> Current Portfolio</h4>
+                        <button class="btn-clear" onclick="clearPortfolio('current')">
+                            <i class="bi bi-trash"></i> Clear
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="portfolio-table">
+                            <thead>
+                                <tr>
+                                    <th>Investment</th>
+                                    <th>APIR</th>
+                                    <th>5 Years</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="currentPortfolioBody">
+                                <tr>
+                                    <td colspan="4" class="empty-state">
+                                        <i class="bi bi-inbox"></i>
+                                        <div>No investments added</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #f8f9fa;">
+                                    <td colspan="2"><strong>Average</strong></td>
+                                    <td><strong id="currentAverage">-</strong></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proposed Portfolio -->
+            <div class="col-lg-6 mb-4">
+                <div class="portfolio-section portfolio-proposed">
+                    <div class="portfolio-header">
+                        <h4><i class="bi bi-lightbulb"></i> Proposed Portfolio</h4>
+                        <button class="btn-clear" onclick="clearPortfolio('proposed')">
+                            <i class="bi bi-trash"></i> Clear
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="portfolio-table">
+                            <thead>
+                                <tr>
+                                    <th>Investment</th>
+                                    <th>APIR</th>
+                                    <th>5 Years</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="proposedPortfolioBody">
+                                <tr>
+                                    <td colspan="4" class="empty-state">
+                                        <i class="bi bi-inbox"></i>
+                                        <div>No investments added</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #f8f9fa;">
+                                    <td colspan="2"><strong>Average</strong></td>
+                                    <td><strong id="proposedAverage">-</strong></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Chart -->
+        <div class="chart-container" id="comparisonSection" style="display: none;">
+            <h4 class="mb-4"><i class="bi bi-graph-up-arrow"></i> Performance Comparison</h4>
+            <canvas id="comparisonChart" height="100"></canvas>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loadingState">
+            <i class="bi bi-arrow-repeat"></i>
+            <div>Loading investment data...</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    
+    <script>
+        // Global variables
+        let investmentsData = [];
+        let currentPortfolio = [];
+        let proposedPortfolio = [];
+        let comparisonChart = null;
+        
+        // Load CSV data automatically when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCSVData();
+        });
+        
+        // Load CSV data
+        function loadCSVData() {
+            fetch('./2025.csv')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load CSV file');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    parseCSV(data);
+                    document.getElementById('loadingState').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error loading CSV:', error);
+                    document.getElementById('loadingState').innerHTML = `
+                        <i class="bi bi-exclamation-circle text-danger"></i>
+                        <div class="text-danger">Error loading investment data. Please ensure 2025.csv is in the same directory.</div>
+                    `;
+                });
+        }
+        
+        // Parse CSV data
+        function parseCSV(csvData) {
+            Papa.parse(csvData, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    processData(results.data);
+                }
+            });
+        }
+        
+        // Process the data with correct column mappings
+        function processData(data) {
+            investmentsData = data.map(row => {
+                // Parse performance values
+                const parsePerformance = (value) => {
+                    if (!value || value === '' || value === 'N/A' || value === '#REF!') return null;
+                    const parsed = parseFloat(value);
+                    return isNaN(parsed) ? null : parsed;
+                };
+                
+                return {
+                    apir: row['APIR Code'] || '', // Column C
+                    name: row['Group/Investment'] || '', // Column E
+                    threeMonths: parsePerformance(row['Return\n(Cumulative)'] || row['Q']), // First performance column
+                    oneYear: parsePerformance(row['Return\n(Cumulative)'] || row['R']), // Second performance column
+                    threeYears: parsePerformance(row['Return\n(Annualized)'] || row['S']), // Third performance column
+                    fiveYears: parsePerformance(row['Return\n(Annualized)'] || row['T']), // Fourth performance column
+                    tenYears: parsePerformance(row['Return\n(Annualized)'] || row['U']), // Fifth performance column
+                    assetClass: row['Asset Class (Findex)'] || 'Unknown',
+                    sector: row['Sector (Findex)'] || '',
+                    status: row['Status'] || ''
+                };
+            }).filter(item => item.name && item.name.trim() !== '' && item.status === 'Approved');
+            
+            console.log('Loaded', investmentsData.length, 'approved investments');
+        }
+        
+        // Perform search
+        function performSearch() {
+            const nameQuery = document.getElementById('nameSearch').value.toLowerCase().trim();
+            const apirQuery = document.getElementById('apirSearch').value.toLowerCase().trim();
+            
+            if (!nameQuery && !apirQuery) {
+                alert('Please enter a search term');
+                return;
+            }
+            
+            let results = investmentsData.filter(item => {
+                const nameMatch = nameQuery && item.name.toLowerCase().includes(nameQuery);
+                const apirMatch = apirQuery && item.apir.toLowerCase().includes(apirQuery);
+                return nameMatch || apirMatch;
+            });
+            
+            displaySearchResults(results);
+        }
+        
+        // Display search results
+        function displaySearchResults(results) {
+            const resultsDiv = document.getElementById('searchResults');
+            const resultsSection = document.getElementById('searchResultsSection');
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<p class="text-muted text-center">No investments found</p>';
+            } else {
+                resultsDiv.innerHTML = results.map(item => {
+                    const fiveYearDisplay = item.fiveYears !== null ? item.fiveYears.toFixed(2) + '%' : 'N/A';
+                    
+                    return `
+                        <div class="investment-result">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-2">${item.name}</h6>
+                                    <small class="text-muted">APIR: ${item.apir || 'N/A'} | ${item.assetClass}</small>
+                                    <div class="mt-2">
+                                        ${item.threeMonths !== null ? `<span class="performance-pill ${item.threeMonths >= 0 ? 'performance-positive' : 'performance-negative'}">3M: ${item.threeMonths.toFixed(2)}%</span>` : ''}
+                                        ${item.oneYear !== null ? `<span class="performance-pill ${item.oneYear >= 0 ? 'performance-positive' : 'performance-negative'}">1Y: ${item.oneYear.toFixed(2)}%</span>` : ''}
+                                        ${item.threeYears !== null ? `<span class="performance-pill ${item.threeYears >= 0 ? 'performance-positive' : 'performance-negative'}">3Y: ${item.threeYears.toFixed(2)}%</span>` : ''}
+                                        ${item.fiveYears !== null ? `<span class="performance-pill ${item.fiveYears >= 0 ? 'performance-positive' : 'performance-negative'}"><strong>5Y: ${item.fiveYears.toFixed(2)}%</strong></span>` : ''}
+                                        ${item.tenYears !== null ? `<span class="performance-pill ${item.tenYears >= 0 ? 'performance-positive' : 'performance-negative'}">10Y: ${item.tenYears.toFixed(2)}%</span>` : ''}
+                                    </div>
+                                </div>
+                                <div>
+                                    <button class="btn-add-current" onclick='addToPortfolio(${JSON.stringify(item).replace(/'/g, "&apos;")}, "current")'>
+                                        <i class="bi bi-plus-circle"></i> Current
+                                    </button>
+                                    <button class="btn-add-proposed" onclick='addToPortfolio(${JSON.stringify(item).replace(/'/g, "&apos;")}, "proposed")'>
+                                        <i class="bi bi-plus-circle"></i> Proposed
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            resultsSection.style.display = 'block';
+        }
+        
+        // Add investment to portfolio
+        function addToPortfolio(investment, portfolioType) {
+            const portfolio = portfolioType === 'current' ? currentPortfolio : proposedPortfolio;
+            
+            // Check if already exists
+            const exists = portfolio.some(item => item.apir === investment.apir);
+            if (exists) {
+                alert('This investment is already in the ' + portfolioType + ' portfolio');
+                return;
+            }
+            
+            portfolio.push(investment);
+            updatePortfolioDisplay(portfolioType);
+            updateSummary();
+        }
+        
+        // Update portfolio display
+        function updatePortfolioDisplay(portfolioType) {
+            const portfolio = portfolioType === 'current' ? currentPortfolio : proposedPortfolio;
+            const tbody = document.getElementById(portfolioType + 'PortfolioBody');
+            const averageEl = document.getElementById(portfolioType + 'Average');
+            
+            if (portfolio.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <div>No investments added</div>
+                        </td>
+                    </tr>
+                `;
+                averageEl.textContent = '-';
+                return;
+            }
+            
+            // Calculate average (only for investments with 5-year data)
+            const validInvestments = portfolio.filter(item => item.fiveYears !== null);
+            const avgFiveYears = validInvestments.length > 0 
+                ? validInvestments.reduce((sum, item) => sum + item.fiveYears, 0) / validInvestments.length 
+                : null;
+            
+            // Update table
+            tbody.innerHTML = portfolio.map((item, index) => `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.apir || 'N/A'}</td>
+                    <td class="${item.fiveYears >= 0 ? 'text-success' : 'text-danger'}">
+                        <strong>${item.fiveYears !== null ? item.fiveYears.toFixed(2) + '%' : 'N/A'}</strong>
+                    </td>
+                    <td>
+                        <button class="btn-remove" onclick="removeFromPortfolio(${index}, '${portfolioType}')">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // Update average
+            if (avgFiveYears !== null) {
+                averageEl.textContent = avgFiveYears.toFixed(2) + '%';
+                averageEl.className = avgFiveYears >= 0 ? 'text-success' : 'text-danger';
+            } else {
+                averageEl.textContent = 'N/A';
+                averageEl.className = '';
+            }
+        }
+        
+        // Remove investment from portfolio
+        function removeFromPortfolio(index, portfolioType) {
+            const portfolio = portfolioType === 'current' ? currentPortfolio : proposedPortfolio;
+            portfolio.splice(index, 1);
+            updatePortfolioDisplay(portfolioType);
+            updateSummary();
+        }
+        
+        // Clear portfolio
+        function clearPortfolio(portfolioType) {
+            if (confirm('Are you sure you want to clear the ' + portfolioType + ' portfolio?')) {
+                if (portfolioType === 'current') {
+                    currentPortfolio = [];
+                } else {
+                    proposedPortfolio = [];
+                }
+                updatePortfolioDisplay(portfolioType);
+                updateSummary();
+            }
+        }
+        
+        // Update summary and comparison
+        function updateSummary() {
+            const summarySection = document.getElementById('summarySection');
+            const comparisonSection = document.getElementById('comparisonSection');
+            
+            if (currentPortfolio.length === 0 && proposedPortfolio.length === 0) {
+                summarySection.style.display = 'none';
+                comparisonSection.style.display = 'none';
+                return;
+            }
+            
+            summarySection.style.display = 'block';
+            
+            // Update summary text
+            const currentSummary = document.getElementById('currentSummary');
+            const proposedSummary = document.getElementById('proposedSummary');
+            
+            if (currentPortfolio.length > 0) {
+                const avgPerf = calculateAveragePerformance(currentPortfolio);
+                currentSummary.innerHTML = `
+                    <div>3 Months: ${avgPerf.threeMonths !== null ? avgPerf.threeMonths.toFixed(2) + '%' : 'N/A'}</div>
+                    <div>1 Year: ${avgPerf.oneYear !== null ? avgPerf.oneYear.toFixed(2) + '%' : 'N/A'}</div>
+                    <div>3 Years: ${avgPerf.threeYears !== null ? avgPerf.threeYears.toFixed(2) + '%' : 'N/A'}</div>
+                    <div><strong>5 Years: ${avgPerf.fiveYears !== null ? avgPerf.fiveYears.toFixed(2) + '%' : 'N/A'}</strong></div>
+                    <div>10 Years: ${avgPerf.tenYears !== null ? avgPerf.tenYears.toFixed(2) + '%' : 'N/A'}</div>
+                `;
+            } else {
+                currentSummary.innerHTML = 'No investments selected';
+            }
+            
+            if (proposedPortfolio.length > 0) {
+                const avgPerf = calculateAveragePerformance(proposedPortfolio);
+                proposedSummary.innerHTML = `
+                    <div>3 Months: ${avgPerf.threeMonths !== null ? avgPerf.threeMonths.toFixed(2) + '%' : 'N/A'}</div>
+                    <div>1 Year: ${avgPerf.oneYear !== null ? avgPerf.oneYear.toFixed(2) + '%' : 'N/A'}</div>
+                    <div>3 Years: ${avgPerf.threeYears !== null ? avgPerf.threeYears.toFixed(2) + '%' : 'N/A'}</div>
+                    <div><strong>5 Years: ${avgPerf.fiveYears !== null ? avgPerf.fiveYears.toFixed(2) + '%' : 'N/A'}</strong></div>
+                    <div>10 Years: ${avgPerf.tenYears !== null ? avgPerf.tenYears.toFixed(2) + '%' : 'N/A'}</div>
+                `;
+            } else {
+                proposedSummary.innerHTML = 'No investments selected';
+            }
+            
+            // Update comparison chart
+            if (currentPortfolio.length > 0 || proposedPortfolio.length > 0) {
+                comparisonSection.style.display = 'block';
+                updateComparisonChart();
+            }
+        }
+        
+        // Calculate average performance
+        function calculateAveragePerformance(portfolio) {
+            const calculateAvg = (field) => {
+                const validItems = portfolio.filter(item => item[field] !== null);
+                if (validItems.length === 0) return null;
+                return validItems.reduce((sum, item) => sum + item[field], 0) / validItems.length;
+            };
+            
+            return {
+                threeMonths: calculateAvg('threeMonths'),
+                oneYear: calculateAvg('oneYear'),
+                threeYears: calculateAvg('threeYears'),
+                fiveYears: calculateAvg('fiveYears'),
+                tenYears: calculateAvg('tenYears')
+            };
+        }
+        
+        // Update comparison chart
+        function updateComparisonChart() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            const currentAvg = calculateAveragePerformance(currentPortfolio);
+            const proposedAvg = calculateAveragePerformance(proposedPortfolio);
+            
+            const data = {
+                labels: ['3 Months', '1 Year', '3 Years', '5 Years', '10 Years'],
+                datasets: []
+            };
+            
+            if (currentPortfolio.length > 0) {
+                data.datasets.push({
+                    label: 'Current Portfolio',
+                    data: [
+                        currentAvg.threeMonths || 0,
+                        currentAvg.oneYear || 0,
+                        currentAvg.threeYears || 0,
+                        currentAvg.fiveYears || 0,
+                        currentAvg.tenYears || 0
+                    ],
+                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                    borderColor: 'rgba(52, 152, 219, 1)',
+                    borderWidth: 2,
+                    borderRadius: 10
+                });
+            }
+            
+            if (proposedPortfolio.length > 0) {
+                data.datasets.push({
+                    label: 'Proposed Portfolio',
+                    data: [
+                        proposedAvg.threeMonths || 0,
+                        proposedAvg.oneYear || 0,
+                        proposedAvg.threeYears || 0,
+                        proposedAvg.fiveYears || 0,
+                        proposedAvg.tenYears || 0
+                    ],
+                    backgroundColor: 'rgba(39, 174, 96, 0.7)',
+                    borderColor: 'rgba(39, 174, 96, 1)',
+                    borderWidth: 2,
+                    borderRadius: 10
+                });
+            }
+            
+            if (comparisonChart) {
+                comparisonChart.destroy();
+            }
+            
+            comparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                display: true,
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                                }
+                            },
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 12,
+                            cornerRadius: 8
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Handle Enter key in search inputs
+        document.getElementById('nameSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') performSearch();
+        });
+        
+        document.getElementById('apirSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') performSearch();
+        });
+    </script>
+</body>
+</html>
