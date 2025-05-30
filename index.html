@@ -13,16 +13,22 @@
             box-sizing: border-box;
         }
 
+        html {
+            overflow-x: hidden;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             padding: 20px;
+            overflow-x: hidden !important;
         }
 
         .main-container {
             max-width: 1400px;
             margin: 0 auto;
+            overflow-x: hidden;
         }
 
         h1 {
@@ -43,6 +49,8 @@
             padding: 25px;
             margin-bottom: 25px;
             transition: transform 0.3s ease;
+            max-width: 100%;
+            overflow: hidden;
         }
 
         .glass-card:hover {
@@ -96,6 +104,8 @@
             margin-bottom: 15px;
             border: 1px solid #e9ecef;
             transition: all 0.3s ease;
+            max-width: 100%;
+            overflow: hidden;
         }
 
         .investment-result:hover {
@@ -111,6 +121,7 @@
             font-size: 14px;
             font-weight: 600;
             margin: 3px;
+            white-space: nowrap;
         }
 
         .performance-positive {
@@ -128,6 +139,8 @@
             border-radius: 20px;
             padding: 25px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            max-width: 100%;
+            overflow: hidden;
         }
 
         .portfolio-header {
@@ -214,6 +227,9 @@
         .portfolio-table td {
             padding: 12px;
             border-bottom: 1px solid #f0f0f0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 300px;
         }
 
         .portfolio-table tbody tr:hover {
@@ -243,6 +259,8 @@
             padding: 30px;
             margin-bottom: 25px;
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            max-width: 100%;
+            overflow: hidden;
         }
 
         .summary-grid {
@@ -272,6 +290,15 @@
             border-radius: 20px;
             padding: 25px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            max-width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #comparisonChart {
+            max-width: 100% !important;
+            height: 100% !important;
+            position: relative !important;
         }
 
         .loading {
@@ -310,6 +337,15 @@
             h1 {
                 font-size: 2rem;
             }
+            
+            .chart-container {
+                padding: 15px;
+            }
+            
+            .chart-container > div {
+                height: 300px !important;
+                max-height: 300px !important;
+            }
         }
     </style>
 </head>
@@ -339,9 +375,9 @@
             </div>
             
             <!-- Search Results -->
-            <div class="mt-4" id="searchResultsSection" style="display: none;">
+            <div class="mt-4" id="searchResultsSection" style="display: none; max-width: 100%; overflow: hidden;">
                 <h5 class="mb-3">Search Results</h5>
-                <div id="searchResults"></div>
+                <div id="searchResults" style="max-width: 100%; overflow-x: auto;"></div>
             </div>
         </div>
 
@@ -448,7 +484,9 @@
         <!-- Comparison Chart -->
         <div class="chart-container" id="comparisonSection" style="display: none;">
             <h4 class="mb-4"><i class="bi bi-graph-up-arrow"></i> Performance Comparison</h4>
-            <canvas id="comparisonChart" height="100"></canvas>
+            <div style="position: relative; height: 400px; max-height: 400px; overflow: hidden;">
+                <canvas id="comparisonChart"></canvas>
+            </div>
         </div>
 
         <!-- Loading State -->
@@ -600,11 +638,11 @@
                     
                     return `
                         <div class="investment-result">
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
                                 <div>
                                     <h6 class="mb-2">${item.name}</h6>
                                     <small class="text-muted">APIR: ${item.apir || 'N/A'} ${item.tcr !== null ? '| TCR: ' + item.tcr.toFixed(2) + '%' : ''}</small>
-                                    <div class="mt-2">
+                                    <div class="mt-2 d-flex flex-wrap">
                                         ${item.threeMonths !== null ? `<span class="performance-pill ${item.threeMonths >= 0 ? 'performance-positive' : 'performance-negative'}">3M: ${item.threeMonths.toFixed(2)}%</span>` : ''}
                                         ${item.oneYear !== null ? `<span class="performance-pill ${item.oneYear >= 0 ? 'performance-positive' : 'performance-negative'}">1Y: ${item.oneYear.toFixed(2)}%</span>` : ''}
                                         ${item.threeYears !== null ? `<span class="performance-pill ${item.threeYears >= 0 ? 'performance-positive' : 'performance-negative'}">3Y: ${item.threeYears.toFixed(2)}%</span>` : ''}
@@ -793,7 +831,18 @@
             // Update comparison chart
             if (currentPortfolio.length > 0 || proposedPortfolio.length > 0) {
                 comparisonSection.style.display = 'block';
-                updateComparisonChart();
+                // Small delay to ensure DOM is ready and visible
+                setTimeout(() => {
+                    if (document.getElementById('comparisonSection').style.display !== 'none') {
+                        updateComparisonChart();
+                    }
+                }, 100);
+            } else {
+                comparisonSection.style.display = 'none';
+                if (comparisonChart) {
+                    comparisonChart.destroy();
+                    comparisonChart = null;
+                }
             }
         }
         
@@ -816,7 +865,13 @@
         
         // Update comparison chart
         function updateComparisonChart() {
-            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            const canvas = document.getElementById('comparisonChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Clear the canvas before creating a new chart
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             const currentAvg = calculateAveragePerformance(currentPortfolio);
             const proposedAvg = calculateAveragePerformance(proposedPortfolio);
@@ -862,7 +917,17 @@
             
             if (comparisonChart) {
                 comparisonChart.destroy();
+                comparisonChart = null;
             }
+            
+            // Ensure the canvas has dimensions before creating the chart
+            const container = canvas.parentElement;
+            if (container.offsetWidth === 0 || container.offsetHeight === 0) {
+                console.warn('Chart container has no dimensions, skipping chart creation');
+                return;
+            }
+            
+            console.log('Creating comparison chart with dimensions:', container.offsetWidth, 'x', container.offsetHeight);
             
             comparisonChart = new Chart(ctx, {
                 type: 'bar',
@@ -870,22 +935,40 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 10,
+                            top: 10,
+                            bottom: 10
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
                                     return value + '%';
-                                }
+                                },
+                                stepSize: 5
                             },
                             grid: {
                                 display: true,
-                                drawBorder: false
+                                drawBorder: false,
+                                color: 'rgba(0, 0, 0, 0.05)'
                             }
                         },
                         x: {
                             grid: {
                                 display: false
+                            },
+                            ticks: {
+                                maxRotation: 0,
+                                minRotation: 0
                             }
                         }
                     },
@@ -893,6 +976,7 @@
                         legend: {
                             display: true,
                             position: 'top',
+                            align: 'center',
                             labels: {
                                 padding: 20,
                                 usePointStyle: true,
@@ -909,8 +993,12 @@
                             },
                             backgroundColor: 'rgba(0,0,0,0.8)',
                             padding: 12,
-                            cornerRadius: 8
+                            cornerRadius: 8,
+                            displayColors: true
                         }
+                    },
+                    animation: {
+                        duration: 500
                     }
                 }
             });
@@ -923,6 +1011,17 @@
         
         document.getElementById('apirSearch').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') performSearch();
+        });
+        
+        // Handle window resize for chart
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                if (comparisonChart && document.getElementById('comparisonChart')) {
+                    comparisonChart.resize();
+                }
+            }, 250);
         });
     </script>
 </body>
